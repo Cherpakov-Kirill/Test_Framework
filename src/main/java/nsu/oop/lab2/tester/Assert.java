@@ -5,15 +5,18 @@ import nsu.oop.lab2.tester.domestic.InexactArraysComparison;
 import nsu.oop.lab2.tester.exceptions.AssertException;
 
 public class Assert {
+    // CR: why protected?
     protected Assert() {
     }
 
+    // CR: why not private
     ///formatting failures message
     static String format(String message, Object expected, Object actual) {
         String formatted = "";
         if (message != null && !message.equals("")) formatted = message + "\n";
         String expectedString = String.valueOf(expected);
         String actualString = String.valueOf(actual);
+        // CR: please use if else or even extract to separate method, now it's hard to read
         return expectedString.equals(actualString) ? formatted + "expected: " + formatClassAndValue(expected, expectedString) + " but was: " + formatClassAndValue(actual, actualString) : formatted + "expected:<" + expectedString + "> but was:<" + actualString + ">";
     }
 
@@ -24,6 +27,7 @@ public class Assert {
 
     ///Fail()
     public static void fail(String message) {
+        // CR: can move this logic to AssertException constructor
         if (message == null) {
             throw new AssertException();
         } else {
@@ -79,6 +83,7 @@ public class Assert {
 
     ///Asserts for same/not same
     private static void failSame(String message) {
+        // CR: ternary
         String failureMessage = "";
         if (message != null) failureMessage = message + " ";
         fail("assertNotSame is not passed\n" + failureMessage + "expected not same");
@@ -114,6 +119,7 @@ public class Assert {
     ///Asserts equals for objects, not for long, double, float
     private static boolean equalsRegardingNull(Object expected, Object actual) {
         if (expected == null) return actual == null;
+        // CR: can optimize and compare with == first
         else return expected.equals(actual);
     }
 
@@ -125,6 +131,7 @@ public class Assert {
         assertEquals(null, expected, actual);
     }
 
+    // CR: why don't you have the same method e.g. for ints?
     ///Asserts equals for long, double, float
     public static void assertEquals(String message, long expected, long actual) {
         if (expected != actual) failNotEquals(message, expected, actual);
@@ -216,6 +223,7 @@ public class Assert {
         assertArrayEquals(null, expecteds, actuals);
     }
 
+    // CR: I'm not sure that you avoid boxing here, please check
     ///Boolean[]
     public static void assertArrayEquals(String message, boolean[] expecteds, boolean[] actuals) {
         (new ExactArraysComparison()).checkingForEqualsArrays(message, expecteds, actuals);

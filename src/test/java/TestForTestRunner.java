@@ -58,6 +58,8 @@ public class TestForTestRunner {
         URLClassLoader classLoader = new URLClassLoader(new URL[]{testDataDir.toURI().toURL()});
         Class<?> privateTest = Class.forName(testName, true, classLoader);
 
+        // CR: i'm not sure what your tests actually do. in your program if test actually throws exception it won't be
+        // CR: thrown here, so you just running some tests without any checking
         TestRunner.runClassTesting(privateTest);
     }
 
