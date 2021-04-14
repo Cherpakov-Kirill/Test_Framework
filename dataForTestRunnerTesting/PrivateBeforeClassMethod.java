@@ -3,11 +3,10 @@ import nsu.oop.lab2.tester.annotations.AfterClass;
 import nsu.oop.lab2.tester.annotations.Before;
 import nsu.oop.lab2.tester.annotations.BeforeClass;
 import nsu.oop.lab2.tester.annotations.Test;
-import nsu.oop.lab2.tester.exceptions.TestRunnerException;
 
-public class PrivateAfterMethod {
+public class PrivateBeforeClassMethod {
     @BeforeClass
-    public void beforeClass() {
+    private void beforeClass() {
         System.out.println("BeforeClass-method. Good job!");
     }
 
@@ -22,13 +21,17 @@ public class PrivateAfterMethod {
     }
 
     @After
-    private void after() {
-        System.err.println("Entering into private after-method!");
-        throw new RuntimeException("Private after-method");
+    public void after() {
+        System.out.println("After-method. Good job!");
     }
 
     @Test
-    public void test() {
-        System.out.println("Test-method. Good job!");
+    public void test1() {
+        System.out.println("Test-method 1. Good job!");
+    }
+
+    @Test
+    public void test2() {
+        System.out.println("Test-method 2. Good job!");
     }
 }

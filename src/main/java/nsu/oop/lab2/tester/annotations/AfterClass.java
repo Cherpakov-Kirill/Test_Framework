@@ -7,6 +7,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
-// CR: why do you need this class if you don't support such type of annotations? same for AfterClass
 public @interface AfterClass {
 }

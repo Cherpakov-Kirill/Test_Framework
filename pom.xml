@@ -6,7 +6,7 @@
 
     <groupId>nsu.oop.lab2</groupId>
     <artifactId>Test_Framework</artifactId>
-    <version>8.1-SNAPSHOT</version>
+    <version>10.0-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

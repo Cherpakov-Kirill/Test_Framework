@@ -1,23 +1,18 @@
 package nsu.oop.lab2.tester;
 
-import nsu.oop.lab2.tester.domestic.ExactArraysComparison;
-import nsu.oop.lab2.tester.domestic.InexactArraysComparison;
+import nsu.oop.lab2.tester.comparison.ArrayAssertUtils;
 import nsu.oop.lab2.tester.exceptions.AssertException;
 
 public class Assert {
-    // CR: why protected?
-    protected Assert() {
-    }
-
-    // CR: why not private
     ///formatting failures message
-    static String format(String message, Object expected, Object actual) {
+    private static String format(String message, Object expected, Object actual) {
         String formatted = "";
         if (message != null && !message.equals("")) formatted = message + "\n";
         String expectedString = String.valueOf(expected);
         String actualString = String.valueOf(actual);
-        // CR: please use if else or even extract to separate method, now it's hard to read
-        return expectedString.equals(actualString) ? formatted + "expected: " + formatClassAndValue(expected, expectedString) + " but was: " + formatClassAndValue(actual, actualString) : formatted + "expected:<" + expectedString + "> but was:<" + actualString + ">";
+        if (expectedString.equals(actualString)) {
+            return formatted + "expected: " + formatClassAndValue(expected, expectedString) + " but was: " + formatClassAndValue(actual, actualString);
+        } else return formatted + "expected:<" + expectedString + "> but was:<" + actualString + ">";
     }
 
     private static String formatClassAndValue(Object value, String valueString) {
@@ -25,18 +20,8 @@ public class Assert {
         return className + "<" + valueString + ">";
     }
 
-    ///Fail()
-    public static void fail(String message) {
-        // CR: can move this logic to AssertException constructor
-        if (message == null) {
-            throw new AssertException();
-        } else {
-            throw new AssertException("Assert failed: " + message);
-        }
-    }
-
-    public static void fail() {
-        fail(null);
+    private static void fail(String message) {
+        throw new AssertException(message);
     }
 
     ///Assert true
@@ -59,7 +44,7 @@ public class Assert {
     }
 
     ///Asserts for null/not null
-    public static void failNotNull(String message, Object actual) {
+    private static void failNotNull(String message, Object actual) {
         String failureMessage = "";
         if (message != null) failureMessage = message + " ";
         fail("assertNull is not passed\n" + failureMessage + "expected null, but was:<" + actual + ">");
@@ -83,9 +68,7 @@ public class Assert {
 
     ///Asserts for same/not same
     private static void failSame(String message) {
-        // CR: ternary
-        String failureMessage = "";
-        if (message != null) failureMessage = message + " ";
+        String failureMessage = (message == null) ? "" : " ";
         fail("assertNotSame is not passed\n" + failureMessage + "expected not same");
     }
 
@@ -118,9 +101,8 @@ public class Assert {
 
     ///Asserts equals for objects, not for long, double, float
     private static boolean equalsRegardingNull(Object expected, Object actual) {
-        if (expected == null) return actual == null;
-        // CR: can optimize and compare with == first
-        else return expected.equals(actual);
+        if (expected == actual) return true;
+        return expected.equals(actual);
     }
 
     public static void assertEquals(String message, Object expected, Object actual) {
@@ -131,8 +113,15 @@ public class Assert {
         assertEquals(null, expected, actual);
     }
 
-    // CR: why don't you have the same method e.g. for ints?
-    ///Asserts equals for long, double, float
+    ///Asserts equals for int, long, double, float
+    public static void assertEquals(String message, int expected, int actual) {
+        if (expected != actual) failNotEquals(message, expected, actual);
+    }
+
+    public static void assertEquals(int expected, int actual) {
+        assertEquals(null, expected, actual);
+    }
+
     public static void assertEquals(String message, long expected, long actual) {
         if (expected != actual) failNotEquals(message, expected, actual);
     }
@@ -178,6 +167,14 @@ public class Assert {
         assertNotEquals(null, unexpected, actual);
     }
 
+    public static void assertNotEquals(String message, int unexpected, int actual) {
+        if (unexpected == actual) failEquals(message, unexpected, actual);
+    }
+
+    public static void assertNotEquals(int unexpected, int actual) {
+        assertNotEquals(null, unexpected, actual);
+    }
+
     public static void assertNotEquals(String message, long unexpected, long actual) {
         if (unexpected == actual) failEquals(message, unexpected, actual);
     }
@@ -216,17 +213,16 @@ public class Assert {
 
     ///Object[]
     public static void assertArrayEquals(String message, Object[] expecteds, Object[] actuals) {
-        (new ExactArraysComparison()).checkingForEqualsArrays(message, expecteds, actuals);
+        ArrayAssertUtils.arrayEquals(message, expecteds, actuals);
     }
 
     public static void assertArrayEquals(Object[] expecteds, Object[] actuals) {
         assertArrayEquals(null, expecteds, actuals);
     }
 
-    // CR: I'm not sure that you avoid boxing here, please check
     ///Boolean[]
     public static void assertArrayEquals(String message, boolean[] expecteds, boolean[] actuals) {
-        (new ExactArraysComparison()).checkingForEqualsArrays(message, expecteds, actuals);
+        ArrayAssertUtils.arrayEquals(message, expecteds, actuals);
     }
 
     public static void assertArrayEquals(boolean[] expecteds, boolean[] actuals) {
@@ -235,7 +231,7 @@ public class Assert {
 
     ///Byte[]
     public static void assertArrayEquals(String message, byte[] expecteds, byte[] actuals) {
-        (new ExactArraysComparison()).checkingForEqualsArrays(message, expecteds, actuals);
+        ArrayAssertUtils.arrayEquals(message, expecteds, actuals);
     }
 
     public static void assertArrayEquals(byte[] expecteds, byte[] actuals) {
@@ -244,7 +240,7 @@ public class Assert {
 
     ///Char[]
     public static void assertArrayEquals(String message, char[] expecteds, char[] actuals) {
-        (new ExactArraysComparison()).checkingForEqualsArrays(message, expecteds, actuals);
+        ArrayAssertUtils.arrayEquals(message, expecteds, actuals);
     }
 
     public static void assertArrayEquals(char[] expecteds, char[] actuals) {
@@ -253,7 +249,7 @@ public class Assert {
 
     ///Short[]
     public static void assertArrayEquals(String message, short[] expecteds, short[] actuals) {
-        (new ExactArraysComparison()).checkingForEqualsArrays(message, expecteds, actuals);
+        ArrayAssertUtils.arrayEquals(message, expecteds, actuals);
     }
 
     public static void assertArrayEquals(short[] expecteds, short[] actuals) {
@@ -262,7 +258,7 @@ public class Assert {
 
     ///Int[]
     public static void assertArrayEquals(String message, int[] expecteds, int[] actuals) {
-        (new ExactArraysComparison()).checkingForEqualsArrays(message, expecteds, actuals);
+        ArrayAssertUtils.arrayEquals(message, expecteds, actuals);
     }
 
     public static void assertArrayEquals(int[] expecteds, int[] actuals) {
@@ -271,7 +267,7 @@ public class Assert {
 
     ///Long[]
     public static void assertArrayEquals(String message, long[] expecteds, long[] actuals) {
-        (new ExactArraysComparison()).checkingForEqualsArrays(message, expecteds, actuals);
+        ArrayAssertUtils.arrayEquals(message, expecteds, actuals);
     }
 
     public static void assertArrayEquals(long[] expecteds, long[] actuals) {
@@ -280,7 +276,7 @@ public class Assert {
 
     ///Double[]
     public static void assertArrayEquals(String message, double[] expecteds, double[] actuals, double delta) {
-        (new InexactArraysComparison(delta)).checkingForEqualsArrays(message, expecteds, actuals);
+        ArrayAssertUtils.arrayEquals(message, expecteds, actuals, delta);
     }
 
     public static void assertArrayEquals(double[] expecteds, double[] actuals, double delta) {
@@ -289,7 +285,7 @@ public class Assert {
 
     ///Float[]
     public static void assertArrayEquals(String message, float[] expecteds, float[] actuals, float delta) {
-        (new InexactArraysComparison(delta)).checkingForEqualsArrays(message, expecteds, actuals);
+        ArrayAssertUtils.arrayEquals(message, expecteds, actuals, delta);
     }
 
     public static void assertArrayEquals(float[] expecteds, float[] actuals, float delta) {
