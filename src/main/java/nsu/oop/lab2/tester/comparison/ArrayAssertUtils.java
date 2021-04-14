@@ -60,7 +60,7 @@ public class ArrayAssertUtils {
             if (!actuals.getClass().isArray()) throw new IllegalArgumentException("Actual-object is not array");
             compareArrays(message, expecteds, actuals, 0);
             StringBuilder outMessage = new StringBuilder();
-            if(!elementsAreEqual){
+            if (!elementsAreEqual) {
                 outMessage.append("Actual array differs from expected array is the first time at element ");
                 Collections.reverse(exceptionIndexes);
                 for (Integer curIndex : exceptionIndexes) outMessage.append("[").append(curIndex).append("]");
@@ -90,8 +90,8 @@ public class ArrayAssertUtils {
                 } else {
                     compareElements(expected, actual);
                 }
-                if (!elementsAreEqual){
-                    exceptionIndexes.add(0, i);
+                if (!elementsAreEqual) {
+                    exceptionIndexes.add(i);
                     return;
                 }
             }

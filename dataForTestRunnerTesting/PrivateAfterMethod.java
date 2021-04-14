@@ -3,7 +3,6 @@ import nsu.oop.lab2.tester.annotations.AfterClass;
 import nsu.oop.lab2.tester.annotations.Before;
 import nsu.oop.lab2.tester.annotations.BeforeClass;
 import nsu.oop.lab2.tester.annotations.Test;
-import nsu.oop.lab2.tester.exceptions.TestRunnerException;
 
 public class PrivateAfterMethod {
     @BeforeClass

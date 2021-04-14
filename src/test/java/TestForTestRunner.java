@@ -1,6 +1,4 @@
 import nsu.oop.lab2.tester.TestRunner;
-import nsu.oop.lab2.tester.exceptions.TestRunnerException;
-import org.junit.Assert;
 import org.junit.Test;
 
 import javax.tools.JavaCompiler;
@@ -24,10 +22,13 @@ public class TestForTestRunner {
         javaCompiler.run(null, null, null, fileToLoad.toString());
 
         URLClassLoader classLoader = new URLClassLoader(new URL[]{testDataDir.toURI().toURL()});
-        Class<?> privateAfter = Class.forName(testName, true, classLoader);
+        Class<?> allAnnotation = Class.forName(testName, true, classLoader);
 
-        TestRunner.runClassTesting(privateAfter);
+        TestRunner.runTest(allAnnotation, exception -> {
+            throw new RuntimeException(exception);
+        });
     }
+
     @Test
     public void PrivateBeforeClassMethod() throws ClassNotFoundException, MalformedURLException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
         String testName = "PrivateBeforeClassMethod";
@@ -40,14 +41,13 @@ public class TestForTestRunner {
         javaCompiler.run(null, null, null, fileToLoad.toString());
 
         URLClassLoader classLoader = new URLClassLoader(new URL[]{testDataDir.toURI().toURL()});
-        Class<?> privateAfter = Class.forName(testName, true, classLoader);
+        Class<?> privateBefore = Class.forName(testName, true, classLoader);
 
-        TestRunner.runTest(privateAfter, exception -> {
+        TestRunner.runTest(privateBefore, exception -> {
             throw new RuntimeException(exception);
         });
-
-        TestRunner.runClassTesting(privateAfter);
     }
+
     @Test
     public void PrivateAfterClassMethod() throws ClassNotFoundException, MalformedURLException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
         String testName = "PrivateAfterClassMethod";
@@ -60,10 +60,13 @@ public class TestForTestRunner {
         javaCompiler.run(null, null, null, fileToLoad.toString());
 
         URLClassLoader classLoader = new URLClassLoader(new URL[]{testDataDir.toURI().toURL()});
-        Class<?> privateAfter = Class.forName(testName, true, classLoader);
+        Class<?> privateAfterClass = Class.forName(testName, true, classLoader);
 
-        TestRunner.runClassTesting(privateAfter);
+        TestRunner.runTest(privateAfterClass, exception -> {
+            throw new RuntimeException(exception);
+        });
     }
+
     @Test
     public void privateAfterMethod() throws ClassNotFoundException, MalformedURLException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         String testName = "PrivateAfterMethod";
@@ -77,7 +80,9 @@ public class TestForTestRunner {
 
         URLClassLoader classLoader = new URLClassLoader(new URL[]{testDataDir.toURI().toURL()});
         Class<?> privateAfter = Class.forName(testName, true, classLoader);
-        TestRunner.runClassTesting(privateAfter);
+        TestRunner.runTest(privateAfter, exception -> {
+            throw new RuntimeException(exception);
+        });
     }
 
     @Test
@@ -94,7 +99,9 @@ public class TestForTestRunner {
         URLClassLoader classLoader = new URLClassLoader(new URL[]{testDataDir.toURI().toURL()});
         Class<?> privateBefore = Class.forName(testName, true, classLoader);
 
-        TestRunner.runClassTesting(privateBefore);
+        TestRunner.runTest(privateBefore, exception -> {
+            throw new RuntimeException(exception);
+        });
     }
 
     @Test
@@ -111,9 +118,9 @@ public class TestForTestRunner {
         URLClassLoader classLoader = new URLClassLoader(new URL[]{testDataDir.toURI().toURL()});
         Class<?> privateTest = Class.forName(testName, true, classLoader);
 
-        // CR: i'm not sure what your tests actually do. in your program if test actually throws exception it won't be
-        // CR: thrown here, so you just running some tests without any checking
-        TestRunner.runClassTesting(privateTest);
+        TestRunner.runTest(privateTest, exception -> {
+            throw new RuntimeException(exception);
+        });
     }
 
     @Test
@@ -128,8 +135,10 @@ public class TestForTestRunner {
         javaCompiler.run(null, null, null, fileToLoad.toString());
 
         URLClassLoader classLoader = new URLClassLoader(new URL[]{testDataDir.toURI().toURL()});
-        Class<?> PrivateAfterAndBefore = Class.forName(testName, true, classLoader);
+        Class<?> privateAfterAndBefore = Class.forName(testName, true, classLoader);
 
-        TestRunner.runClassTesting(PrivateAfterAndBefore);
+        TestRunner.runTest(privateAfterAndBefore, exception -> {
+            throw new RuntimeException(exception);
+        });
     }
 }
