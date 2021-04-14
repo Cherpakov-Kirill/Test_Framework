@@ -1,11 +1,13 @@
 package nsu.oop.lab2.tester;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import nsu.oop.lab2.tester.annotations.*;
 import nsu.oop.lab2.tester.exceptions.TestRunnerException;
@@ -18,6 +20,34 @@ public class TestRunner {
                 example: nsu.oop.lab2.app.ArraysTests nsu.oop.lab2.app.ObjectsTests""");
     }
 
+    private final Consumer<Exception> exceptionHandler;
+
+    TestRunner() {
+        exceptionHandler = TestRunner::printError;
+    }
+
+    TestRunner(Consumer<Exception> exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
+    }
+
+    public static void runTest(Class<?> testClass) {
+        TestRunner testRunner = new TestRunner(testClass, TestRunner::printError);
+        testRunner.runClassTesting();
+    }
+
+    public static void runTest(Class<?> testClass, Consumer<Exception> exceptionHandler) {
+        TestRunner testRunner = new TestRunner(testClass, exceptionHandler);
+        testRunner.runClassTesting();
+    }
+
+    private static void printError(Exception e) {
+        if (e instanceof InvocationTargetException) {
+            // TODO: print user error
+            return;
+        }
+        // TDOO: print framework error
+    }
+
     public static void main(String[] args) {
         if (args.length == 0) printUsage();
         else {
@@ -25,7 +55,8 @@ public class TestRunner {
                 System.out.println("\nRunning " + arg);
                 try {
                     final Class<?> testClass = Class.forName(arg);
-                    runClassTesting(testClass);
+                    TestRunner testRunner = new TestRunner();
+                    testRunner.runClassTesting(testClass);
                 } catch (IllegalAccessException | InstantiationException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException e) {
                     e.printStackTrace();
                 }
@@ -33,7 +64,18 @@ public class TestRunner {
         }
     }
 
+    private static List<Method> collectMethods(Method[] declaredMethods, Class<? extends Annotation> toSearch) {
+        for (Method declaredMethod : declaredMethods) {
+            declaredMethod.getAnnotation(toSearch);
+        }
+    }
+
+    private static void invalidMethod(String annoName) {
+
+    }
+
     private static void findAllPublicMethods(Method[] declaredMethods, List<Method> declaredTestMethods, List<Method> declaredBeforeMethods, List<Method> declaredBeforeClassMethods, List<Method> declaredAfterMethods, List<Method> declaredAfterClassMethods) {
+        collectMethods(declaredMethods, BeforeClass.class);
         for (Method declaredMethod : declaredMethods) {
             if (declaredMethod.getAnnotation(BeforeClass.class) != null) {
                 if (declaredMethod.getModifiers() == (Modifier.PRIVATE | Modifier.STATIC) || declaredMethod.getModifiers() == Modifier.PRIVATE) {
@@ -50,7 +92,8 @@ public class TestRunner {
                 declaredBeforeMethods.add(declaredMethod);
             }
             if (declaredMethod.getAnnotation(Test.class) != null) {
-                if (declaredMethod.getModifiers() == (Modifier.PRIVATE | Modifier.STATIC) || declaredMethod.getModifiers() == Modifier.PRIVATE) {
+                int modifiers = declaredMethod.getModifiers();
+                if ((!Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers))) {
                     System.out.println("WARNING! \"" + declaredMethod.getName() + "\" is private Test-method! Make it public.");
                     continue;
                 }
@@ -73,26 +116,30 @@ public class TestRunner {
         }
     }
 
-    private static void runBeforeClassMethods(Object constructorClass, List<Method> declaredBeforeClassMethods) {
+    private static void runBeforeClassMethods(Object constructorClass, List<Method> declaredBeforeClassMethods) throws InvocationTargetException {
         for (Method beforeClassMethod : declaredBeforeClassMethods) {
             try {
                 beforeClassMethod.invoke(constructorClass);
-            } catch (Exception e) {
+            }  catch (InvocationTargetException e) {
+                System.err.println("");
+                throw e;
+            }
+            catch (Exception e) {
                 throw new TestRunnerException("Program failed at running of BeforeClass method \"" + beforeClassMethod.getName() + "\"", e);
             }
         }
     }
 
-    private static void runBeforeMethods(Object constructorClass, Method[] declaredMethods, List<Method> declaredBeforeMethods, List<Method> declaredAfterCLassMethods) {
+    private boolean runMethods(List<Method> declaredBeforeMethods) {
         for (Method beforeMethod : declaredBeforeMethods) {
             try {
                 beforeMethod.invoke(constructorClass);
             } catch (Exception e) {
-                System.err.println("Program failed at running of Before method \"" + beforeMethod.getName() + "\"");
-                runAfterClassMethods(constructorClass,declaredAfterCLassMethods);
-                throw new TestRunnerException("Program failed at running of Before method \"" + beforeMethod.getName() + "\"", e);
+                exceptionHandler.accept(e);
+                return false;
             }
         }
+        return true;
     }
 
     private static void runAfterMethods(Object constructorClass, List<Method> declaredAfterMethods) {
@@ -115,35 +162,25 @@ public class TestRunner {
         }
     }
 
-    public static void runClassTesting(Class<?> testClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        List<Method> declaredTestMethods = new ArrayList<>();
+    public void runClassTesting(Class<?> testClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Method[] declaredMethods = testClass.getDeclaredMethods();
+        List<Method> declaredTestMethods = collectMethods(declaredMethods, Test.class);
         List<Method> declaredBeforeMethods = new ArrayList<>();
         List<Method> declaredBeforeClassMethods = new ArrayList<>();
         List<Method> declaredAfterMethods = new ArrayList<>();
         List<Method> declaredAfterClassMethods = new ArrayList<>();
-        Method[] declaredMethods = testClass.getDeclaredMethods();
         Constructor<?> constructor = testClass.getConstructor();
         Object constructorClass = constructor.newInstance();
         findAllPublicMethods(declaredMethods, declaredTestMethods, declaredBeforeMethods, declaredBeforeClassMethods, declaredAfterMethods, declaredAfterClassMethods);
         long countOfTests = declaredTestMethods.size();
         long countOfFailedTests = 0;
         long numberOfTest = 0;
-        if (countOfTests != 0) {
-            try {
-                runBeforeClassMethods(constructorClass, declaredBeforeClassMethods);
-            } catch (TestRunnerException e) {
-                System.err.println("Cause of exception in invoke of BeforeClass method: " + e.getCause());
-                throw new TestRunnerException("TestClass failed. BeforeClass Method was broken",e);
-            }
-
-        }
+        if (!runMethods(declaredBeforeClassMethods)) return;
         for (Method testMethod : declaredTestMethods) {
             numberOfTest++;
-            try{
-                runBeforeMethods(constructorClass, declaredMethods, declaredBeforeMethods, declaredAfterClassMethods);
-            } catch (TestRunnerException e){
-                System.err.println("Cause of exception in invoke of Before method: " + e.getCause());
-                throw new TestRunnerException("TestClass failed. Before Method was broken.",e);
+            if (!runMethods(constructorClass, declaredMethods, declaredBeforeMethods)) {
+                runMethods(constructorClass, declaredMethods, declaredAfterClassMethods);
+                return;
             }
             boolean gotException = false;
             try {
@@ -158,7 +195,7 @@ public class TestRunner {
                     e.printStackTrace();
                 }
             } finally {
-                runAfterMethods(constructorClass, declaredAfterMethods);
+                runMethods(declaredAfterClassMethods);
                 if (numberOfTest == countOfTests) runAfterClassMethods(constructorClass, declaredAfterClassMethods);
             }
             if (!gotException && testMethod.getAnnotation(Test.class).expected() != Test.None.class) {
@@ -167,6 +204,7 @@ public class TestRunner {
                 countOfFailedTests++;
             }
         }
+        runMethods(declaredAfterClassMethods);
         if (countOfFailedTests == 0) {
             System.out.println("All tests passed: " + countOfTests + " of " + countOfTests + " tests");
         } else {

@@ -4,6 +4,7 @@ import nsu.oop.lab2.tester.exceptions.AssertException;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ArrayAssertUtils {
@@ -61,6 +62,7 @@ public class ArrayAssertUtils {
             StringBuilder outMessage = new StringBuilder();
             if(!elementsAreEqual){
                 outMessage.append("Actual array differs from expected array is the first time at element ");
+                Collections.reverse(exceptionIndexes);
                 for (Integer curIndex : exceptionIndexes) outMessage.append("[").append(curIndex).append("]");
                 throw new AssertException(outMessage.toString());
             }

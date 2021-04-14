@@ -1,5 +1,6 @@
 import nsu.oop.lab2.tester.TestRunner;
 import nsu.oop.lab2.tester.exceptions.TestRunnerException;
+import org.junit.Assert;
 import org.junit.Test;
 
 import javax.tools.JavaCompiler;
@@ -40,6 +41,10 @@ public class TestForTestRunner {
 
         URLClassLoader classLoader = new URLClassLoader(new URL[]{testDataDir.toURI().toURL()});
         Class<?> privateAfter = Class.forName(testName, true, classLoader);
+
+        TestRunner.runTest(privateAfter, exception -> {
+            throw new RuntimeException(exception);
+        });
 
         TestRunner.runClassTesting(privateAfter);
     }
